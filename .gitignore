@@ -1,0 +1,47 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+*.dll
+*.exe
+*.app
+*.log
+*.pdb
+*.cache
+*.db
+
+# Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+logs/
+LogFiles/
+
+# Secrets & credentials
+secrets.json
+*.env
+*.key
+*.pem
+
+# Others
+*.nupkg
+*.vs/
+packages/
+TestResults/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+_ReSharper.*

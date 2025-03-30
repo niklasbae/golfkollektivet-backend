@@ -1,0 +1,6 @@
+@golfkollektivet_backend_HostAddress = http://localhost:5043
+
+GET {{golfkollektivet_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
