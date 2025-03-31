@@ -1,4 +1,4 @@
-// Models/SubmitScoreRequest.cs
+// Updated SubmitScoreRequest.cs
 using System.ComponentModel.DataAnnotations;
 
 namespace GolfkollektivetBackend.Models;
@@ -11,6 +11,8 @@ public class SubmitScoreRequest
     [Required] public string ClubName { get; set; } = default!;
     [Required] public string CourseName { get; set; } = default!;
     [Required] public string TeeName { get; set; } = default!;
+    public string TeeGender { get; set; } = "Male";
+
     [Required] public string MarkerName { get; set; } = default!;
 
     [Required, RegularExpression(@"\d{2}\.\d{2}\.\d{4}", ErrorMessage = "Format: dd.MM.yyyy")]

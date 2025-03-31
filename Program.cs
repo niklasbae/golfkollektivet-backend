@@ -11,6 +11,7 @@ builder.Services.AddSwaggerGen();
 
 // Register GolfboxGuidMapService (required by GolfboxController)
 builder.Services.AddSingleton<GolfboxGuidMapService>();
+builder.Services.AddSingleton<FetchAllClubData>();
 
 // Register GolfboxService with HTTP client support and cookies
 builder.Services.AddHttpClient<GolfboxService>(nameof(GolfboxService))

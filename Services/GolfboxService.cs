@@ -52,7 +52,7 @@ public class GolfboxService
         return (hcp, selectedGuid);
     }
 
-    public async Task<(string PlayerGuid, string MagicName, string MagicValue)> GetDynamicTokenAsync(string selectedGuid)
+    public async Task<(string PlayerGuid, string MagicName, string MagicValue, List<(string Name, string Guid)> Clubs)> GetDynamicTokenAsync(string selectedGuid)
     {
         var url = $"https://www.golfbox.no/site/my_golfbox/score/whs/newWHSScore.asp?selected={selectedGuid}";
         Console.WriteLine($"🌐 Fetching score form: {url}");
@@ -65,37 +65,53 @@ public class GolfboxService
         if (inputs == null)
             throw new Exception("❌ No hidden input fields found!");
 
+        string playerGuid = null;
+        string magicName = null;
+        string magicValue = null;
+
         foreach (var node in inputs)
         {
             var name = node.GetAttributeValue("name", "");
             var value = node.GetAttributeValue("value", "");
             Console.WriteLine($"🔍 Hidden field: {name} = {value}");
+
+            if (Regex.IsMatch(name, @"^[A-F0-9\-]{36}$", RegexOptions.IgnoreCase))
+            {
+                magicName = name;
+                magicValue = value;
+            }
+
+            if (name == "fld_PlayerMemberGUID")
+            {
+                playerGuid = value;
+            }
         }
 
-        var uuidInput = inputs.FirstOrDefault(n =>
-            Regex.IsMatch(n.GetAttributeValue("name", ""), @"^[A-F0-9\-]{36}$", RegexOptions.IgnoreCase));
-
-        if (uuidInput == null)
-            throw new Exception("❌ Dynamic UUID input field not found");
-
-        var magicName = uuidInput.GetAttributeValue("name", "");
-        var magicValue = uuidInput.GetAttributeValue("value", "");
-
-        var playerGuidInput = inputs.FirstOrDefault(n =>
-            n.GetAttributeValue("name", "") == "fld_PlayerMemberGUID");
-
-        if (playerGuidInput == null)
-            throw new Exception("❌ Player GUID input field not found");
-
-        var playerGuid = playerGuidInput.GetAttributeValue("value", "");
+        if (string.IsNullOrEmpty(playerGuid) || string.IsNullOrEmpty(magicName) || string.IsNullOrEmpty(magicValue))
+            throw new Exception("❌ Required fields not found in the form");
 
         Console.WriteLine($"✅ Dynamic field: {magicName} = {magicValue}");
         Console.WriteLine($"✅ Player GUID: {playerGuid}");
 
-        return (playerGuid, magicName, magicValue);
+        var clubs = new List<(string Name, string Guid)>();
+        var clubOptions = doc.DocumentNode.SelectNodes("//select[@id='fld_Club']/option");
+        if (clubOptions != null)
+        {
+            foreach (var option in clubOptions)
+            {
+                var name = option.InnerText.Trim();
+                var guid = option.GetAttributeValue("value", "").Trim();
+                if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(guid))
+                {
+                    clubs.Add((name, guid));
+                }
+            }
+        }
+
+        return (playerGuid, magicName, magicValue, clubs);
     }
 
-    public async Task<(string Par, string Rating, string Slope, string Pcc)> FetchCourseStatsAsync(
+    public async Task<(string Par, string Rating, string Slope, string Pcc, string IsHcpQualifying)> FetchCourseStatsAsync(
         string courseGuid,
         string teeGuid,
         string playerGuid,
@@ -118,15 +134,99 @@ public class GolfboxService
         var slope = data.GetProperty("Slope").ToString();
 
         var pcc = "0";
+        var isHcpQualifyingRaw = data.TryGetProperty("IsHCPQualifying", out var hcpProp) && hcpProp.GetBoolean();
+        var isHcpQualifying = isHcpQualifyingRaw ? "1" : "0";
 
-        Console.WriteLine($"📐 Course stats: Par={par}, CR={crFormatted}, Slope={slope}, PCC={pcc}");
+        Console.WriteLine($"📐 Course stats: Par={par}, CR={crFormatted}, Slope={slope}, PCC={pcc}, IsHCPQualifying={isHcpQualifying}");
 
-        return (par, crFormatted, slope, pcc);
+        return (par, crFormatted, slope, pcc, isHcpQualifying);
     }
 
+    public async Task<string> ResolveCourseGuidAsync(
+        string clubGuid,
+        string courseName,
+        string scoreDate,
+        string scoreTime)
+    {
+        var dateTime = DateTime.ParseExact($"{scoreDate} {scoreTime}", "dd.MM.yyyy HH:mm", null);
+        var scoreDateIso = dateTime.ToString("yyyyMMddTHHmmss");
+
+        var url = $"https://www.golfbox.no/site/score/whs/api/serviceCaller.asp?action=GetCourses&ScoreDate={scoreDateIso}&Club_GUID={clubGuid}";
+        Console.WriteLine($"📍 Fetching courses from: {url}");
+
+        var response = await _httpClient.GetStringAsync(url);
+        Console.WriteLine($"📦 Raw course response:\n{response}");
+
+        using var jsonDoc = JsonDocument.Parse(response);
+        var root = jsonDoc.RootElement;
+        if (!root.TryGetProperty("Data", out var data))
+            throw new Exception("❌ Could not find 'Data' property in course response.");
+
+        foreach (var course in data.EnumerateArray())
+        {
+            var name = course.GetProperty("Course_Name").GetString()?.Trim();
+            var guid = course.GetProperty("Course_GUID").GetString();
+
+            Console.WriteLine($"📘 Course option: {name} => {guid}");
+
+            if (string.Equals(name, courseName, StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"✅ Matched course '{courseName}' with GUID {guid}");
+                return guid!;
+            }
+        }
+
+        var availableCourses = string.Join(", ", data.EnumerateArray()
+            .Select(c => c.GetProperty("Course_Name").GetString()?.Trim()));
+        throw new Exception($"❌ Course '{courseName}' not found. Available: {availableCourses}");
+    }
+
+    public async Task<string> ResolveTeeGuidAsync(string courseGuid, string teeName, string teeGender)
+    {
+        var scoreDate = DateTime.Now.ToString("yyyyMMddTHHmmss");
+        var url = $"https://www.golfbox.no/site/score/whs/api/serviceCaller.asp?action=GetTees&ScoreDate={scoreDate}&Course_GUID={courseGuid}";
+        Console.WriteLine($"📍 Fetching tees from: {url}");
+
+        var json = await _httpClient.GetStringAsync(url);
+        Console.WriteLine($"📦 Raw tee response:\n{json}");
+
+        using var doc = JsonDocument.Parse(json);
+        if (!doc.RootElement.TryGetProperty("Data", out var teeList))
+            throw new Exception("❌ JSON does not contain 'Data' field for tees.");
+
+        string? teeGuid = null;
+        var availableTees = new List<string>();
+
+        foreach (var tee in teeList.EnumerateArray())
+        {
+            var name = tee.GetProperty("Text").GetString()?.Trim() ?? "";
+            var gender = tee.GetProperty("Gender").GetString()?.Trim() ?? "";
+            var guid = tee.GetProperty("Value").GetString();
+
+            availableTees.Add($"{name} ({gender})");
+            Console.WriteLine($"🏷️ Tee option: {name} ({gender}) => {guid}");
+
+            if (string.Equals(name, teeName, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(gender, teeGender, StringComparison.OrdinalIgnoreCase))
+            {
+                teeGuid = guid;
+                Console.WriteLine($"✅ Matched tee '{teeName}' ({teeGender}) with GUID {teeGuid}");
+                break;
+            }
+        }
+
+        if (string.IsNullOrEmpty(teeGuid))
+        {
+            var fallback = string.Join(", ", availableTees);
+            throw new Exception($"❌ Tee '{teeName}' ({teeGender}) not found for course {courseGuid}. Available: {fallback}");
+        }
+
+        return teeGuid;
+    }
     public async Task<bool> SubmitScoreAsync(SubmitScoreRequest req, string magicName, string magicValue)
     {
-        var stats = await FetchCourseStatsAsync(req.CourseGuid!, req.TeeGuid!, req.PlayerGuid!, req.ScoreDate);
+        var (par, rating, slope, pcc, isHcpQualifying) = await FetchCourseStatsAsync(
+            req.CourseGuid!, req.TeeGuid!, req.PlayerGuid!, req.ScoreDate);
 
         var formData = new Dictionary<string, string>
         {
@@ -134,7 +234,7 @@ public class GolfboxService
             ["command"] = "save",
             [magicName] = magicValue,
             ["rUrl"] = "/site/my_golfbox/score/whs/newWHSScore.asp",
-            ["isHcpQualifying"] = "1",
+            ["isHcpQualifying"] = isHcpQualifying,
             ["fld_PlayerMemberGUID"] = req.PlayerGuid,
             ["chk_IsCounting"] = "on",
             ["fld_MemberGUID"] = req.PlayerGuid,
@@ -143,12 +243,12 @@ public class GolfboxService
             ["rdo_RoundType"] = "2",
             ["fld_HolesPlayed"] = req.HoleScores.Count.ToString(),
             ["fld_Club"] = req.ClubId,
-            ["fld_PCC"] = stats.Pcc,
+            ["fld_PCC"] = pcc,
             ["fld_Course"] = req.CourseGuid,
             ["fld_Tee"] = req.TeeGuid,
-            ["fld_CoursePar"] = stats.Par,
-            ["fld_CourseRating"] = stats.Rating,
-            ["fld_Slope"] = stats.Slope,
+            ["fld_CoursePar"] = par,
+            ["fld_CourseRating"] = rating,
+            ["fld_Slope"] = slope,
             ["fld_MarkerMemberGUID"] = req.MarkerGuid,
             ["chk_InputHoleScores"] = "on"
         };
@@ -212,4 +312,81 @@ public class GolfboxService
 
         return results;
     }
+    
+    public async Task<List<CourseWithTees>> FetchClubCoursesAndTeesAsync(string clubGuid)
+{
+    var scoreDateIso = DateTime.Now.ToString("yyyyMMddTHHmmss");
+    var courseUrl = $"https://www.golfbox.no/site/score/whs/api/serviceCaller.asp?action=GetCourses&ScoreDate={scoreDateIso}&Club_GUID={clubGuid}";
+    Console.WriteLine($"📍 Fetching courses from: {courseUrl}");
+
+    var response = await _httpClient.GetStringAsync(courseUrl);
+    Console.WriteLine($"📦 Raw course response:\n{response}");
+
+    using var jsonDoc = JsonDocument.Parse(response);
+    var root = jsonDoc.RootElement;
+    if (!root.TryGetProperty("Data", out var data))
+        throw new Exception("❌ Could not find 'Data' property in course response.");
+
+    var result = new List<CourseWithTees>();
+
+    foreach (var course in data.EnumerateArray())
+    {
+        var courseName = course.GetProperty("Course_Name").GetString()?.Trim();
+        var courseGuid = course.GetProperty("Course_GUID").GetString();
+
+        Console.WriteLine($"📘 Course option: {courseName} => {courseGuid}");
+
+        var teeUrl = $"https://www.golfbox.no/site/score/whs/api/serviceCaller.asp?action=GetTees&ScoreDate={scoreDateIso}&Course_GUID={courseGuid}";
+        Console.WriteLine($"📍 Fetching tees from: {teeUrl}");
+
+        var teeJson = await _httpClient.GetStringAsync(teeUrl);
+        Console.WriteLine($"📦 Raw tee response:\n{teeJson}");
+
+        using var teeDoc = JsonDocument.Parse(teeJson);
+        var teeRoot = teeDoc.RootElement;
+        if (!teeRoot.TryGetProperty("Data", out var teeList))
+            throw new Exception($"❌ JSON does not contain 'Data' field for tees on course {courseName}");
+
+        var tees = new List<TeeOption>();
+        foreach (var tee in teeList.EnumerateArray())
+        {
+            var name = tee.GetProperty("Text").GetString()?.Trim() ?? "";
+            var gender = tee.GetProperty("Gender").GetString()?.Trim() ?? "";
+            var guid = tee.GetProperty("Value").GetString();
+
+            Console.WriteLine($"🏷️ Tee option: {name} ({gender}) => {guid}");
+
+            tees.Add(new TeeOption
+            {
+                Name = name,
+                Gender = gender,
+                Guid = guid
+            });
+        }
+
+        result.Add(new CourseWithTees
+        {
+            CourseName = courseName!,
+            CourseGuid = courseGuid!,
+            Tees = tees
+        });
+    }
+
+    return result;
+}
+
+public class CourseWithTees
+{
+    public string CourseName { get; set; } = default!;
+    public string CourseGuid { get; set; } = default!;
+    public List<TeeOption> Tees { get; set; } = new();
+}
+
+public class TeeOption
+{
+    public string Name { get; set; } = default!;
+    public string Gender { get; set; } = default!;
+    public string Guid { get; set; } = default!;
+}
+
 }
