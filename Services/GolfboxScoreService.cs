@@ -24,7 +24,13 @@ public class GolfboxScoreService
             return new SubmitScoreResult { Success = false, ErrorMessage = "Login failed or SelectedGuid missing." };
 
         var dynamicToken = await _authService.GetDynamicTokenAsync(loginResult.SelectedGuid);
-
+        if (string.IsNullOrEmpty(dynamicToken.PlayerGuid) ||
+            string.IsNullOrEmpty(dynamicToken.MagicName) ||
+            string.IsNullOrEmpty(dynamicToken.MagicValue))
+        {
+            return new SubmitScoreResult { Success = false, ErrorMessage = "Dynamic token fields are incomplete." };
+        }
+        
         var markerGuid = await _markerService.GetMarkerGuidAsync(request.MarkerName);
         if (string.IsNullOrEmpty(markerGuid))
             return new SubmitScoreResult { Success = false, ErrorMessage = "Marker not found." };
@@ -77,19 +83,12 @@ public class GolfboxScoreService
         for (int i = 0; i < request.HoleScores.Count; i++)
             formData[$"ScoreHole_{i}"] = request.HoleScores[i].ToString();
 
-        var response = await _httpClient.PostAsync(
-            $"https://www.golfbox.no/site/my_golfbox/score/whs/newWHSScore.asp?selected={loginResult.SelectedGuid}",
-            new FormUrlEncodedContent(formData));
-
-        var body = await response.Content.ReadAsStringAsync();
-
-        var success = body.Contains("Score er lagret") ||
-                      response.Headers.Location?.ToString().Contains("listScoresToConfirm.asp") == true;
-
+        var success = await _authService.SubmitPreparedScoreFormAsync(loginResult.SelectedGuid, formData);
+        if (!success)
+            return new SubmitScoreResult { Success = false, ErrorMessage = "Score submission failed." };
+        
         await _authService.LogoutAsync();
-
-        return success
-            ? new SubmitScoreResult { Success = true, Hcp = loginResult.Hcp }
-            : new SubmitScoreResult { Success = false, ErrorMessage = "Score submission failed." };
+        
+        return new SubmitScoreResult { Success = true, Hcp = loginResult.Hcp };
     }
 }

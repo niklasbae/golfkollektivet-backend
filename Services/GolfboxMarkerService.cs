@@ -30,8 +30,6 @@ public class GolfboxMarkerService
         doc.LoadHtml(html);
 
         var options = doc.DocumentNode.SelectNodes("//select[@id='slc_MarkerSearch4result']/option");
-        if (options == null) 
-            return new List<MarkerSearchResult>();
 
         var results = new List<MarkerSearchResult>();
 

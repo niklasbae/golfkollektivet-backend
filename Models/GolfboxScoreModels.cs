@@ -22,14 +22,7 @@ public class SubmitScoreRequest
 
     [Required, MinLength(18), MaxLength(18)]
     public List<int> HoleScores { get; set; } = new();
-
-    // Internal use only
-    public string? PlayerGuid { get; set; }
-    public string? MarkerGuid { get; set; }
-    public string? CourseGuid { get; set; }
-    public string? TeeGuid { get; set; }
-    public string? ClubId { get; set; }
-    public string? SelectedGuid { get; set; }
+    
 }
 
 public class SubmitScoreResult

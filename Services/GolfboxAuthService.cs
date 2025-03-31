@@ -27,22 +27,23 @@ public class GolfboxAuthService
             ["loginform.username"] = username,
             ["loginform.password"] = password
         });
-
+        
         var response = await _httpClient.PostAsync("https://www.golfbox.no/login.asp?rUrl=", content);
         if (!response.IsSuccessStatusCode)
             return (null, null);
-
+        
         var frontPage = await _httpClient.GetStringAsync("https://www.golfbox.no/site/my_golfbox/myFrontPage.asp");
         if (!frontPage.Contains("GolfBox Player"))
             return (null, null);
-
+        
         var hcpMatch = Regex.Match(frontPage, @"HCP[^0-9]*([0-9]{1,2},[0-9])");
         var hcp = hcpMatch.Success ? hcpMatch.Groups[1].Value : null;
 
-        var selectedGuidMatch = Regex.Match(frontPage, @"newWHSScore\.asp\?selected=\{([A-F0-9\-]+)\}",
+        var selectedGuidMatch = Regex.Match(frontPage, @"newWHSScore\.asp\?selected=\{([A-F0-9\-]+)\}", 
             RegexOptions.IgnoreCase);
+        
         var selectedGuid = selectedGuidMatch.Success ? $"{{{selectedGuidMatch.Groups[1].Value}}}" : null;
-
+        
         Console.WriteLine(hcp != null
             ? $"📊 Detected HCP: {hcp}"
             : "⚠️ Could not extract HCP from front page.");
@@ -111,6 +112,24 @@ public class GolfboxAuthService
         }
 
         return (playerGuid, magicName, magicValue, clubs);
+    }
+    
+    public async Task<bool> SubmitPreparedScoreFormAsync(string selectedGuid, Dictionary<string, string> formData)
+    {
+        var response = await _httpClient.PostAsync(
+            $"https://www.golfbox.no/site/my_golfbox/score/whs/newWHSScore.asp?selected={selectedGuid}",
+            new FormUrlEncodedContent(formData));
+
+        var body = await response.Content.ReadAsStringAsync();
+
+        if (!body.Contains("Score er lagret") &&
+            (response.Headers.Location?.ToString().Contains("listScoresToConfirm.asp") != true))
+        {
+            Console.WriteLine("❌ Submission HTML:\n" + body);
+        }
+
+        return body.Contains("Score er lagret") ||
+               response.Headers.Location?.ToString().Contains("listScoresToConfirm.asp") == true;
     }
     
 
