@@ -20,7 +20,7 @@ public class GolfboxDataSeeder
         foreach (var club in clubs)
         {
             Console.WriteLine($"\n⛳ Fetching data for club: {club.Name} ({club.Guid})");
-
+            
             try
             {
                 var courses = await _courseService.FetchClubCoursesAndTeesAsync(club.Guid);
