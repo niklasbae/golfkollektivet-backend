@@ -1,33 +1,58 @@
-// Program.cs
 using System.Net;
 using GolfkollektivetBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register services
+// Logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+// Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register GolfboxGuidMapService (required by GolfboxController)
-builder.Services.AddSingleton<GolfboxGuidMapService>();
-builder.Services.AddSingleton<FetchAllClubData>();
-
-// Register GolfboxService with HTTP client support and cookies
-builder.Services.AddHttpClient<GolfboxService>(nameof(GolfboxService))
-    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+void ConfigureGolfboxHttpClient<T>() where T : class =>
+    builder.Services.AddHttpClient<T>().ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
     {
         AllowAutoRedirect = true,
         UseCookies = true,
         CookieContainer = new CookieContainer()
     });
 
+ConfigureGolfboxHttpClient<GolfboxAuthService>();
+ConfigureGolfboxHttpClient<GolfboxCourseService>();
+ConfigureGolfboxHttpClient<GolfboxMarkerService>();
+
+builder.Services.AddScoped<GolfboxScoreService>();
+builder.Services.AddSingleton<GolfboxDataCache>();
+builder.Services.AddScoped<GolfboxDataSeeder>();
+
+// CORS (optional for frontend)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
-// Middleware setup
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/error");
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
-
+app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
 
