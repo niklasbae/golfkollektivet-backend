@@ -20,7 +20,7 @@ public class SubmitScoreRequest
     [Required, RegularExpression(@"\d{2}:\d{2}", ErrorMessage = "Format: HH:mm")]
     public string ScoreTime { get; set; } = default!;
 
-    [Required, MinLength(18), MaxLength(18)]
+    [Required, MinLength(9), MaxLength(18)]
     public List<int> HoleScores { get; set; } = new();
     
 }
