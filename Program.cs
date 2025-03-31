@@ -1,20 +1,14 @@
-// Program.cs
 using System.Net;
 using GolfkollektivetBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register GolfboxGuidMapService (required by GolfboxController)
-builder.Services.AddSingleton<GolfboxGuidMapService>();
-builder.Services.AddSingleton<FetchAllClubData>();
-
-// Register GolfboxService with HTTP client support and cookies
-builder.Services.AddHttpClient<GolfboxService>(nameof(GolfboxService))
+// HTTP Client registration for multiple services
+builder.Services.AddHttpClient<GolfboxAuthService>()
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
     {
         AllowAutoRedirect = true,
@@ -22,9 +16,29 @@ builder.Services.AddHttpClient<GolfboxService>(nameof(GolfboxService))
         CookieContainer = new CookieContainer()
     });
 
+builder.Services.AddHttpClient<GolfboxCourseService>()
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        AllowAutoRedirect = true,
+        UseCookies = true,
+        CookieContainer = new CookieContainer()
+    });
+
+builder.Services.AddHttpClient<GolfboxMarkerService>()
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        AllowAutoRedirect = true,
+        UseCookies = true,
+        CookieContainer = new CookieContainer()
+    });
+
+// Other services
+builder.Services.AddScoped<GolfboxScoreService>();
+builder.Services.AddSingleton<GolfboxDataCache>();
+builder.Services.AddScoped<GolfboxDataSeeder>();
+
 var app = builder.Build();
 
-// Middleware setup
 app.UseSwagger();
 app.UseSwaggerUI();
 

@@ -1,4 +1,5 @@
-// Models/FetchClubDataRequest.cs
+namespace GolfkollektivetBackend.Models;
+
 public class FetchClubDataRequest
 {
     public List<ClubInput> Clubs { get; set; } = new();

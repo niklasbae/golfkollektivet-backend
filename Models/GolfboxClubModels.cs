@@ -1,4 +1,3 @@
-// Models/GolfboxClubData.cs
 namespace GolfkollektivetBackend.Models;
 
 public class GolfboxClubData

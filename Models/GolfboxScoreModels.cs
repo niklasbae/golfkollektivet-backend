@@ -1,4 +1,3 @@
-// Updated SubmitScoreRequest.cs
 using System.ComponentModel.DataAnnotations;
 
 namespace GolfkollektivetBackend.Models;
@@ -24,11 +23,36 @@ public class SubmitScoreRequest
     [Required, MinLength(18), MaxLength(18)]
     public List<int> HoleScores { get; set; } = new();
 
-    // Internal only, used after mapping
+    // Internal use only
     public string? PlayerGuid { get; set; }
     public string? MarkerGuid { get; set; }
     public string? CourseGuid { get; set; }
     public string? TeeGuid { get; set; }
     public string? ClubId { get; set; }
     public string? SelectedGuid { get; set; }
+}
+
+public class SubmitScoreResult
+{
+    public bool Success { get; set; }
+    public string? Hcp { get; set; }
+    public string? ErrorMessage { get; set; }
+}
+
+public class ResolveCourseTeeRequest
+{
+    public string ClubGuid { get; set; } = default!;
+    public string CourseName { get; set; } = default!;
+    public string TeeName { get; set; } = default!;
+    public string TeeGender { get; set; } = "Male";
+    public string ScoreDate { get; set; } = default!;
+    public string ScoreTime { get; set; } = default!;
+}
+
+public class ResolveCourseTeeResult
+{
+    public bool Success { get; set; }
+    public string CourseGuid { get; set; } = default!;
+    public string TeeGuid { get; set; } = default!;
+    public string ErrorMessage { get; set; } = default!;
 }
