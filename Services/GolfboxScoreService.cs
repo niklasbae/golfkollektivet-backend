@@ -7,14 +7,12 @@ public class GolfboxScoreService
     private readonly GolfboxAuthService _authService;
     private readonly GolfboxCourseService _courseService;
     private readonly GolfboxMarkerService _markerService;
-    private readonly HttpClient _httpClient;
 
-    public GolfboxScoreService(GolfboxAuthService authService, GolfboxCourseService courseService, GolfboxMarkerService markerService, IHttpClientFactory clientFactory)
+    public GolfboxScoreService(GolfboxAuthService authService, GolfboxCourseService courseService, GolfboxMarkerService markerService)
     {
         _authService = authService;
         _courseService = courseService;
         _markerService = markerService;
-        _httpClient = clientFactory.CreateClient("Golfbox");
     }
 
     public async Task<SubmitScoreResult> SubmitScoreAsync(SubmitScoreRequest request)
