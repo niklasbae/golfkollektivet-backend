@@ -41,14 +41,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// if (app.Environment.IsDevelopment())
-// {
+if (app.Environment.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
-// }
-// else
-// {
-//     app.UseExceptionHandler("/error");
-// }
+}
+else
+{
+    app.UseExceptionHandler("/error");
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
