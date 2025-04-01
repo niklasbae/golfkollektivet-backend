@@ -29,6 +29,7 @@ ConfigureGolfboxHttpClient<GolfboxMarkerService>();
 builder.Services.AddScoped<GolfboxScoreService>();
 builder.Services.AddSingleton<GolfboxDataCache>();
 builder.Services.AddScoped<GolfboxDataSeeder>();
+builder.Services.AddSingleton<ScorecardParserService>();
 
 // CORS (optional for frontend)
 builder.Services.AddCors(options =>

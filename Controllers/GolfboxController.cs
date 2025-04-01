@@ -13,19 +13,23 @@ public class GolfboxController : ControllerBase
     private readonly GolfboxCourseService _courseService;
     private readonly GolfboxDataCache _cache;
     private readonly GolfboxDataSeeder _dataSeeder;
+    private readonly ScorecardParserService _parserService;
 
+    
     public GolfboxController(
         GolfboxScoreService scoreService,
         GolfboxMarkerService markerService,
         GolfboxCourseService courseService,
         GolfboxDataCache cache,
-        GolfboxDataSeeder dataSeeder)
+        GolfboxDataSeeder dataSeeder,
+        ScorecardParserService parserService)
     {
         _scoreService = scoreService;
         _markerService = markerService;
         _courseService = courseService;
         _cache = cache;
         _dataSeeder = dataSeeder;
+        _parserService = parserService;
     }
 
     [HttpPost("submit-score")]
@@ -68,5 +72,16 @@ public class GolfboxController : ControllerBase
     {
         var result = await _dataSeeder.FetchAndCacheAllClubsAsync(request.Clubs);
         return Ok(result);
+    }
+    
+    [HttpPost("/api/scorecard/parse")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> ParseScorecard([FromForm] ScorecardUploadRequest request)
+    {
+        if (request.Image == null || request.Image.Length == 0)
+            return BadRequest("No image uploaded");
+
+        var result = await _parserService.ParseScorecardAsync(request.Image);
+        return result != null ? Ok(result) : StatusCode(500, "Failed to parse image");
     }
 }
