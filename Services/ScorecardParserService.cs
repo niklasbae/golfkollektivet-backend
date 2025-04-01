@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using GolfkollektivetBackend.Models;
 using Microsoft.Extensions.Configuration;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace GolfkollektivetBackend.Services;
 
@@ -21,52 +23,47 @@ public class ScorecardParserService
     {
         try
         {
-            await using var imageStream = imageFile.OpenReadStream();
-            var base64Image = Convert.ToBase64String(await ReadAllBytesAsync(imageStream));
-
+            var enhancedBase64 = await EnhanceAndEncodeImageAsync(imageFile);
+            
             var courseData = File.ReadAllText("./Data/course-club-data.json");
             
             var promptText = $@"
-Extract the players first name (usually Norwegian, then Scandinavian, lastly international), course name, and the hole scores from this golf scorecard. The score is always found under the column named 'Score'.
+Extract the player's **first name**, **gender**, **club name**, **course name**, and **hole-by-hole scores** from this golf scorecard image. Scores are always under a column labeled 'Score'.
 
-Below is a list of available clubs, courses, and tee names:
+🏌️ Below is the list of valid golf clubs, courses, and tees:
 
-{courseData}
+{{courseData}}
 
-✅ Return valid JSON using these exact keys:
-- playerName (string)
-- gender (""Male"" or ""Female"", best guess)
-- clubName (string)
-- courseName (string)
-- holes (list of integers representing the hole-by-hole score, 9 or 18 entries)
+📥 Return a valid JSON object with these **exact keys**:
+- `playerName` (string, first name only)
+- `gender` (""Male"" or ""Female"", best guess)
+- `clubName` (must match from list above)
+- `courseName` (must match from list above)
+- `holes` (list of 9 or 18 integers)
 
-🚨 VALIDATION RULES (EXTREMELY IMPORTANT):
+🧠 **Validation rules:**
+- Sum of first 9 holes = ""Front 9"" total (labeled 'Ut')
+- Sum of last 9 holes = ""Back 9"" total (labeled 'In')
+- Sum of all = final total score (e.g., 86 in ""86/72"")
 
-✅ You must extract the hole-by-hole scores (9 or 18 values) and confirm the following:
-- The **Front 9 total** (often labeled ""Ut"") = sum of holes 1–9.
-- The **Back 9 total** (often labeled ""In"") = sum of holes 10–18.
-- The **Final score** = sum of all 18 holes.
+🔍 If the sums don’t match:
+- Start from hole 18 and re-check values.
+- Only correct scores with **low certainty**, one at a time.
+- Rerun validation after each fix.
+- If still uncertain, return a `""comments""` field explaining what couldn't be validated.
 
-💡 These totals are always printed somewhere on the scorecard. Use them to double-check the hole values.
+🚫 Do NOT guess, skip, or merge club/course names.
+🚫 Do NOT invent names — everything must come from the list above.
 
-🧠 If the sum does NOT match the printed total:
-- Re-read the full image, but start from hole 18
-- Go over 1 digit at a time, and calculate a certainty score for each. Fix then only the one with lowest certainty, and re-do the validation. If two digits have low certainty, fix both. If the new certainty is lower than initially, redo the reading.
-- Count how many re-reads you had and output it
-
-🚫 DO NOT GUESS. Return only verified hole values.
-🚫 DO NOT merge `clubName` and `courseName`. Keep them as separate fields.
-🚫 DO NOT return any hole if the value cannot be confidently extracted — exclude it and explain which one is missing.
-
-✅ OUTPUT must be a **pure JSON object** with keys:
-- `playerName` (string)
-- `gender` (""Male"" or ""Female"")
-- `clubName` (string)
-- `courseName` (string)
-- `holes` (array of integers)
-- `number of re-reads` (string)
-
-⚠️ Output ONLY a valid JSON object. No explanations, no markdown.
+✅ Output a **pure JSON object only**, like this:
+```json
+{{
+  ""playerName"": ""Kim-Ole"",
+  ""gender"": ""Male"",
+  ""clubName"": ""Gamle Fredrikstad Golfklubb"",
+  ""courseName"": ""Hovedbane Gamle Fredrikstad GK"",
+  ""holes"": [4, 6, 6, 5, 5, 5, 6, 5, 3, 4, 5, 5, 4, 8, 4, 3, 4, 5]
+}}
 ";
 
             var requestBody = new
@@ -80,7 +77,7 @@ Below is a list of available clubs, courses, and tee names:
                         content = new object[]
                         {
                             new { type = "text", text = promptText },
-                            new { type = "image_url", image_url = new { url = $"data:{imageFile.ContentType};base64,{base64Image}" } }
+                            new { type = "image_url", image_url = new { url = $"data:image/png;base64,{enhancedBase64}" } }
                         }
                     }
                 },
@@ -210,6 +207,30 @@ Below is a list of available clubs, courses, and tee names:
         }
     }
 
+    private async Task<string> EnhanceAndEncodeImageAsync(IFormFile imageFile)
+    {
+        using var inputStream = imageFile.OpenReadStream();
+        using var image = await Image.LoadAsync(inputStream);
+
+        image.Mutate(ctx =>
+        {
+            ctx
+                .Resize(new ResizeOptions
+                {
+                    Size = new Size(image.Width * 2, image.Height * 2),
+                    Mode = ResizeMode.Max
+                })
+                .AutoOrient()
+                .Grayscale()
+                .Contrast(1.2f)
+                .GaussianSharpen();
+        });
+
+        using var ms = new MemoryStream();
+        await image.SaveAsPngAsync(ms);
+        return Convert.ToBase64String(ms.ToArray());
+    }
+    
     private async Task<byte[]> ReadAllBytesAsync(Stream input)
     {
         using var ms = new MemoryStream();
