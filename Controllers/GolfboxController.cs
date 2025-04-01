@@ -82,6 +82,52 @@ public class GolfboxController : ControllerBase
             return BadRequest("No image uploaded");
 
         var result = await _parserService.ParseScorecardAsync(request.Image);
-        return result != null ? Ok(result) : StatusCode(500, "Failed to parse image");
+
+        if (result == null)
+            return StatusCode(500, "Failed to parse image");
+
+        // ✅ Return only minimal shaped response
+        return Ok(new
+        {
+            scoreDate = result.ScoreDate,
+            scoreTime = result.ScoreTime,
+            holes = result.Holes
+        });
+    }
+    
+    [HttpGet("clubs")]
+    public IActionResult GetAllClubs()
+    {
+        var clubs = _cache.Load()
+            .Select(c => new
+            {
+                clubGuid = c.ClubGuid,
+                clubName = c.ClubName,
+                courseCount = c.Courses.Count
+            })
+            .OrderBy(c => c.clubName)
+            .ToList();
+
+        return Ok(clubs);
+    }
+
+    [HttpGet("clubs/{clubGuid}/courses")]
+    public IActionResult GetCoursesForClub(string clubGuid)
+    {
+        var club = _cache.Load().FirstOrDefault(c => c.ClubGuid == clubGuid);
+        if (club == null)
+            return NotFound("Club not found");
+
+        return Ok(club.Courses.Select(c => new
+        {
+            courseGuid = c.CourseGuid,
+            courseName = c.CourseName,
+            tees = c.Tees.Select(t => new
+            {
+                teeGuid = t.TeeGuid,
+                teeName = t.TeeName,
+                teeGender = t.TeeGender
+            })
+        }));
     }
 }

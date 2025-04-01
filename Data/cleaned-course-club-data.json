@@ -1,0 +1,28 @@
+[
+  {
+    "clubName": "Onsøy Golfklubb",
+    "courses": [
+      { "courseName": "Onsøy Golfbane" }
+    ]
+  },
+  {
+    "clubName": "Gamle Fredrikstad Golfklubb",
+    "courses": [
+      { "courseName": "Gamle Fredrikstad Golfklubb Pay & Play" },
+      { "courseName": "Hovedbane Gamle Fredrikstad GK" },
+      { "courseName": "Hovedbanen TEE 36 og TEE  63" }
+    ]
+  },
+  {
+    "clubName": "Oppegård Golfklubb",
+    "courses": [
+      { "courseName": "Oppegård" }
+    ]
+  },
+  {
+    "clubName": "Sorknes Golfklubb",
+    "courses": [
+      { "courseName": "Sorknes GK" }
+    ]
+  }
+]
