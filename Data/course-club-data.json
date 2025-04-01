@@ -1,0 +1,272 @@
+[
+  {
+    "clubGuid": "a85da1e0-b469-4702-bdbc-4e8972ec50a9",
+    "clubName": "Onsøy Golfklubb",
+    "courses": [
+      {
+        "courseGuid": "D82B1CBC-A2B8-4EA5-A9F8-8BE330234218",
+        "courseName": "Onsøy Golfbane",
+        "tees": [
+          {
+            "teeGuid": "D4B8183A-F78F-4A8D-A534-D392DF8F6B9F",
+            "teeName": "59",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "D4B8183A-F78F-4A8D-A534-D392DF8F6B9F",
+            "teeName": "59",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "191A5956-B2A1-4ABD-BBB6-E5BAD796B5FD",
+            "teeName": "56",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "191A5956-B2A1-4ABD-BBB6-E5BAD796B5FD",
+            "teeName": "56",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "57380468-931E-4A44-A7A1-9C3976DF2847",
+            "teeName": "52",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "57380468-931E-4A44-A7A1-9C3976DF2847",
+            "teeName": "52",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "38581CFD-1BBE-4394-AE21-139C5F97AB1C",
+            "teeName": "48",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "38581CFD-1BBE-4394-AE21-139C5F97AB1C",
+            "teeName": "48",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "D226B956-695D-41BA-8C31-11B4D1CC122E",
+            "teeName": "34",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "D226B956-695D-41BA-8C31-11B4D1CC122E",
+            "teeName": "34",
+            "teeGender": "Male"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "clubGuid": "7907b657-e733-48df-b4d1-73029dbff8a0",
+    "clubName": "Gamle Fredrikstad Golfklubb",
+    "courses": [
+      {
+        "courseGuid": "DC0E933A-C588-4479-95BF-FF2FE5069C6B",
+        "courseName": "Gamle Fredrikstad Golfklubb Pay & Play",
+        "tees": [
+          {
+            "teeGuid": "297D0865-A643-4DBF-88E8-D4F92FA39461",
+            "teeName": "98",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "297D0865-A643-4DBF-88E8-D4F92FA39461",
+            "teeName": "98",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "D482E637-4B13-4F8F-980B-06F3407E4D66",
+            "teeName": "74",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "D482E637-4B13-4F8F-980B-06F3407E4D66",
+            "teeName": "74",
+            "teeGender": "Female"
+          }
+        ]
+      },
+      {
+        "courseGuid": "C7063546-6B30-42D9-89BB-3C0459F9167D",
+        "courseName": "Hovedbane Gamle Fredrikstad GK",
+        "tees": [
+          {
+            "teeGuid": "C4E2CF56-414E-4286-B94C-B42B36464699",
+            "teeName": "59",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "C4E2CF56-414E-4286-B94C-B42B36464699",
+            "teeName": "59",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "81533981-C71D-435E-9D20-0B9C81FA3AFB",
+            "teeName": "55",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "81533981-C71D-435E-9D20-0B9C81FA3AFB",
+            "teeName": "55",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "60151DAB-D01C-4791-9FCB-0CADBA20F612",
+            "teeName": "50",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "60151DAB-D01C-4791-9FCB-0CADBA20F612",
+            "teeName": "50",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "0370D609-F166-42E1-94CA-8D9B370C2086",
+            "teeName": "46",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "0370D609-F166-42E1-94CA-8D9B370C2086",
+            "teeName": "46",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "2C691FF4-A480-4964-A1D3-361145347CC7",
+            "teeName": "41",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "2C691FF4-A480-4964-A1D3-361145347CC7",
+            "teeName": "41",
+            "teeGender": "Male"
+          }
+        ]
+      },
+      {
+        "courseGuid": "7396446D-DF97-452F-A07A-26C1D73948E9",
+        "courseName": "Hovedbanen TEE 36 og TEE  63",
+        "tees": [
+          {
+            "teeGuid": "7D1334B6-D815-420C-92D2-F3C71DC1F7D1",
+            "teeName": "63",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "7D1334B6-D815-420C-92D2-F3C71DC1F7D1",
+            "teeName": "63",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "9C12C402-43C8-4552-9112-A8BA2BCF227E",
+            "teeName": "36",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "9C12C402-43C8-4552-9112-A8BA2BCF227E",
+            "teeName": "36",
+            "teeGender": "Female"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "clubGuid": "10fd393e-4608-4cca-825d-e41245efa260",
+    "clubName": "Oppegård Golfklubb",
+    "courses": [
+      {
+        "courseGuid": "758CECC3-3BB2-4635-AECC-7087425FA121",
+        "courseName": "Oppegård",
+        "tees": [
+          {
+            "teeGuid": "EF6ABBA0-0695-4B5B-A39E-7482F32473AE",
+            "teeName": "56",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "F3093C50-FE91-4D3C-91F4-20B14601374B",
+            "teeName": "53",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "F3093C50-FE91-4D3C-91F4-20B14601374B",
+            "teeName": "53",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "C62D3E19-EB69-4C1A-A0A8-A3BA5A45E19A",
+            "teeName": "50",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "C62D3E19-EB69-4C1A-A0A8-A3BA5A45E19A",
+            "teeName": "50",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "93D4E37B-F7D0-44AC-896C-C5ECFD6BAE5A",
+            "teeName": "44",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "93D4E37B-F7D0-44AC-896C-C5ECFD6BAE5A",
+            "teeName": "44",
+            "teeGender": "Female"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "clubGuid": "e62c35c5-9cbe-480d-9ccd-ae3b5c4cc1e7",
+    "clubName": "Sorknes Golfklubb",
+    "courses": [
+      {
+        "courseGuid": "8119D661-847E-4422-AB1F-A6E24C67B565",
+        "courseName": "Sorknes GK",
+        "tees": [
+          {
+            "teeGuid": "DA2D1E4F-96C3-41A0-A854-1A3A0107F2BB",
+            "teeName": "61",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "65BC84EB-5708-4063-AF2F-752EA83366A7",
+            "teeName": "56",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "65BC84EB-5708-4063-AF2F-752EA83366A7",
+            "teeName": "56",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "E8434562-D259-4B6B-A9E0-FF8BF3182766",
+            "teeName": "51",
+            "teeGender": "Male"
+          },
+          {
+            "teeGuid": "E8434562-D259-4B6B-A9E0-FF8BF3182766",
+            "teeName": "51",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "ACDD7274-50BD-40B2-A6BC-E1BBFCC3E5B2",
+            "teeName": "47",
+            "teeGender": "Female"
+          },
+          {
+            "teeGuid": "ACDD7274-50BD-40B2-A6BC-E1BBFCC3E5B2",
+            "teeName": "47",
+            "teeGender": "Male"
+          }
+        ]
+      }
+    ]
+  }
+]

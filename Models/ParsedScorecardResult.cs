@@ -9,4 +9,6 @@ public class ParsedScorecardResult
     public string? ScoreDate { get; set; }
     public string? ScoreTime { get; set; }
     public List<int> Holes { get; set; } = new();
+    
+    public string? Gender { get; set; }
 }
