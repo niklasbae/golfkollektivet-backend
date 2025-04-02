@@ -75,7 +75,7 @@ public class ScorecardParserService
     {
         return $@"
 Extract golf scores from the 'Score' column in the provided scorecard image. Return scores as a JSON object with a key 'holes' containing a list of integers. Ensure the sum of the first 9 scores matches the 'Ut' total and the last 9 scores match the 'In' total. 
-If only 1 row of scores exists, the player did only 9 holes. Output 9 scores only if so. If discrepancies arise, start corrections from hole 9/18 and recheck each step for accuracy. Include a 'comments' field if validation issues persist, and give me the confidence score. If confidence score is below 0.93, recheck. 
+Identify if the player did 9 or 18 holes. If only 1 row of scores exists, the player did only 9 holes. Output 9 scores only if so. Do not interpret the Handicap, Par or Netto row as Scores. If discrepancies arise, start corrections from hole 9/18 and recheck each step for accuracy. Include a 'comments' field if validation issues persist, and give me the confidence score. If confidence score is below 0.93, recheck. 
 Output to me the Y coordinate where the Hull/Hole **row** is starting with great accuracy in the json.
 Output structure: {{
   ""holes"": [],
