@@ -14,6 +14,7 @@ public class GolfboxController : ControllerBase
     private readonly GolfboxDataCache _cache;
     private readonly GolfboxDataSeeder _dataSeeder;
     private readonly ScorecardParserService _parserService;
+    private readonly ForeignCourseDataService _foreignCourseDataService;
 
     
     public GolfboxController(
@@ -22,7 +23,8 @@ public class GolfboxController : ControllerBase
         GolfboxCourseService courseService,
         GolfboxDataCache cache,
         GolfboxDataSeeder dataSeeder,
-        ScorecardParserService parserService)
+        ScorecardParserService parserService,
+        ForeignCourseDataService foreignCourseService)
     {
         _scoreService = scoreService;
         _markerService = markerService;
@@ -30,6 +32,7 @@ public class GolfboxController : ControllerBase
         _cache = cache;
         _dataSeeder = dataSeeder;
         _parserService = parserService;
+        _foreignCourseDataService = foreignCourseService;
     }
 
     [HttpPost("submit-score")]
@@ -131,4 +134,46 @@ public class GolfboxController : ControllerBase
             })
         }));
     }
+    
+    [HttpPost("submit-foreign-score")]
+    public async Task<IActionResult> SubmitForeignScore([FromBody] SubmitForeignScoreRequest request)
+    {
+        var result = await _scoreService.SubmitForeignScoreAsync(request);
+        return result.Success ? Ok(result) : StatusCode(500, result.ErrorMessage);
+    }
+    
+    [HttpPost("foreign-course-data")]
+    public async Task<IActionResult> GetForeignCourseData([FromBody] ForeignCourseRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.CourseName) || string.IsNullOrWhiteSpace(request.TeeName) || string.IsNullOrWhiteSpace(request.Country))
+            return BadRequest("Missing required fields: courseName, teeName, or country.");
+
+        var data = await _foreignCourseDataService.GetCourseDataAsync(request.ClubName, request.CourseName, request.TeeName, request.Country);
+
+        return data != null
+            ? Ok(data)
+            : StatusCode(500, "Failed to retrieve course data from GPT.");
+    }
+    
+    [HttpPost("/api/scorecard/parse-hole-data")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> ParseScorecardWithHoleData([FromForm] ScorecardUploadRequest request)
+    {
+        if (request.Image == null || request.Image.Length == 0)
+            return BadRequest("No image uploaded");
+
+        var result = await _parserService.ParseScorecardWithHoleDataAsync(request.Image);
+
+        if (result == null)
+            return StatusCode(500, "Failed to parse image");
+
+        return Ok(new
+        {
+            scoreDate = result.ScoreDate,
+            scoreTime = result.ScoreTime,
+            structuredHoles = result.HoleDetails,
+            cropY = result.HoleRowStartYCoordinate
+        });
+    }
+    
 }

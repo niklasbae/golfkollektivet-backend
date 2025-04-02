@@ -48,6 +48,70 @@ public class ScorecardParserService
             return null;
         }
     }
+    
+    public async Task<ParsedScorecardResult?> ParseScorecardWithHoleDataAsync(IFormFile imageFile)
+    {
+        try
+        {
+            var enhancedBase64 = await EnhanceAndEncodeImageAsync(imageFile);
+            var promptText = BuildHoleExtractionPrompt();
+            var requestBody = CreateRequestBody(promptText, enhancedBase64, imageFile.ContentType);
+            var apiKey = _config["OpenAI:ApiKey"];
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new Exception("Missing OpenAI API key in configuration.");
+
+            var response = await SendOpenAIRequest(requestBody, apiKey);
+            var rawJson = ExtractRawJsonFromResponse(response);
+            Console.WriteLine("CLEANED HOLE JSON:\n" + rawJson);
+
+            var parsed = JsonSerializer.Deserialize<StructuredHoleDataResponse>(rawJson, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (parsed == null)
+                return null;
+
+            return new ParsedScorecardResult
+            {
+                ScoreDate = DateTime.Now.ToString("dd.MM.yyyy"),
+                ScoreTime = $"{DateTime.Now.Hour:00}:00",
+                Holes = parsed.Holes.Select(h => h.Score).ToList(),
+                HoleDetails = parsed.Holes,
+                HoleRowStartYCoordinate = parsed.HoleRowStartYCoordinate
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ScorecardParserService] Error parsing hole data: {ex.Message}");
+            return null;
+        }
+    }
+
+    private string BuildHoleExtractionPrompt()
+    {
+        return $@"
+
+Extract golf scores from the 'Score' column in the provided scorecard image. Ensure the sum of the first 9 scores matches the 'Ut' total and the last 9 scores match the 'In' total. 
+Identify if the player did 9 or 18 holes. If **IN** is not visible, onlye 9 holes was played!! If only 1 row of scores exists, the player did only 9 holes. Output 9 scores only if so. 
+Do not interpret the Handicap, Par or Netto row as *Scores*. Extract the Hole Number, Par and HCP index individually.
+The player can sometimes start an 18 hole round, but only do 9. If so, the second score row will be empty. Give only 9 scores in such cases as well. If discrepancies arise, start corrections from hole 9/18 and recheck each step for accuracy. 
+Include a 'comments' field if validation issues persist, and give me the confidence score. If confidence score on each of the elements you extract is below 0.93, recheck the given element.
+Return holes as a JSON object holeNumber (int), par (int), hcp(int), score(int).
+Output to me the Y coordinate where the Hull/Hole **row** is starting with great accuracy in the json.
+Output structure: {{
+  ""holes"": [
+        {{ ""holeNumber"": 1, ""par"": 4, ""hcp"": 11, ""score"": 5 }},
+        {{ ""holeNumber"": 2, ""par"": 3, ""hcp"": 17, ""score"": 4 }},
+        ...
+        {{ ""holeNumber"": 18, ""par"": 4, ""hcp"": 4, ""score"": 6 }}
+    ],
+  ""comments"": "",
+  ""confidence_score"": ,
+  ""holeRow_start_y_coordinate"": (int) Ycoordinate
+}}
+";
+    }
 
     private async Task<string> EnhanceAndEncodeImageAsync(IFormFile imageFile)
     {
@@ -86,11 +150,6 @@ Output structure: {{
 
 ";
         
-        
-        
-        
-        
-        
     }
 
     private object CreateRequestBody(string promptText, string base64Image, string contentType) => new
@@ -108,7 +167,7 @@ Output structure: {{
                 }
             }
         },
-        max_tokens = 1200
+        max_tokens = 1500
     };
 
     private async Task<string> SendOpenAIRequest(object requestBody, string apiKey)

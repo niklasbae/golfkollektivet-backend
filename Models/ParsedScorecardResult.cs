@@ -14,5 +14,7 @@ public class ParsedScorecardResult
     public string? Gender { get; set; }
     [JsonPropertyName("holeRow_start_y_coordinate")]
     public int? HoleRowStartYCoordinate { get; set; }
+    
+    public List<ForeignCourseHole> HoleDetails { get; set; } = new();
 
 }
