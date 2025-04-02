@@ -91,7 +91,8 @@ public class GolfboxController : ControllerBase
         {
             scoreDate = result.ScoreDate,
             scoreTime = result.ScoreTime,
-            holes = result.Holes
+            holes = result.Holes,
+            cropY = result.HoleRowStartYCoordinate
         });
     }
     

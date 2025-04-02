@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace GolfkollektivetBackend.Models;
 
 public class ParsedScorecardResult
@@ -9,6 +11,8 @@ public class ParsedScorecardResult
     public string? ScoreDate { get; set; }
     public string? ScoreTime { get; set; }
     public List<int> Holes { get; set; } = new();
-    
     public string? Gender { get; set; }
+    [JsonPropertyName("holeRow_start_y_coordinate")]
+    public int? HoleRowStartYCoordinate { get; set; }
+
 }

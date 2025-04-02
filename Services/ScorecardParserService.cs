@@ -4,6 +4,7 @@ using System.Text.Json;
 using GolfkollektivetBackend.Models;
 using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
 namespace GolfkollektivetBackend.Services;
@@ -74,7 +75,15 @@ public class ScorecardParserService
     {
         return $@"
 Extract golf scores from the 'Score' column in the provided scorecard image. Return scores as a JSON object with a key 'holes' containing a list of integers. Ensure the sum of the first 9 scores matches the 'Ut' total and the last 9 scores match the 'In' total. 
-If discrepancies arise, start corrections from hole 18 and recheck each step for accuracy. Include a 'comments' field if validation issues persist, and give me the confidence score. If confidence score is below 0.93, recheck.
+If discrepancies arise, start corrections from hole 18 and recheck each step for accuracy. Include a 'comments' field if validation issues persist, and give me the confidence score. If confidence score is below 0.93, recheck. 
+Output to me the Y coordinate where the Hull/Hole **row** is starting with great accuracy in the json.
+Output structure: {{
+  ""holes"": [],
+  ""comments"": """",
+  ""confidence_score"": ,
+  ""holeRow_start_y_coordinate"": Y coordinate
+}}
+
 ";
         
         
@@ -144,6 +153,7 @@ If discrepancies arise, start corrections from hole 18 and recheck each step for
         parsed.ScoreDate ??= DateTime.Now.ToString("dd.MM.yyyy");
         parsed.ScoreTime ??= $"{DateTime.Now.Hour:00}:00";
         parsed.Holes ??= new List<int>();
+        parsed.HoleRowStartYCoordinate ??= -1;
     }
 
     private async Task MatchCourseAndTeeAsync(ParsedScorecardResult parsed, string courseData)
@@ -192,5 +202,22 @@ If discrepancies arise, start corrections from hole 18 and recheck each step for
         {
             Console.WriteLine($"[ScorecardParserService] Error while assigning tee name: {ex.Message}");
         }
+    }
+    
+    public static Image CropScoreRegions(Image image, List<BoundingBox> boxes)
+    {
+        var totalHeight = boxes.Sum(b => b.Height);
+        var output = new Image<Rgba32>(boxes.Max(b => b.Width), totalHeight);
+
+        int offsetY = 0;
+
+        foreach (var box in boxes)
+        {
+            var crop = image.Clone(ctx => ctx.Crop(new Rectangle(box.X, box.Y, box.Width, box.Height)));
+            output.Mutate(ctx => ctx.DrawImage(crop, new Point(0, offsetY), 1f));
+            offsetY += box.Height;
+        }
+
+        return output;
     }
 }
