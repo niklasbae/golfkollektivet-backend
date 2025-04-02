@@ -55,11 +55,14 @@ public class ScorecardParserService
 
         image.Mutate(ctx =>
         {
-            ctx.Resize(new ResizeOptions { Size = new Size(image.Width * 2, image.Height * 2), Mode = ResizeMode.Max })
-               .AutoOrient()
-               .Grayscale()
-               .Contrast(1.2f)
-               .GaussianSharpen();
+            image.Mutate(ctx =>
+            {
+                ctx.AutoOrient()
+                    .Grayscale()
+                    .Brightness(1.15f) // Slight boost for faded digits
+                    .Contrast(1.3f) // Sharpen separation from background
+                    .GaussianSharpen(1.3f); // Clarify character edges
+            });
         });
 
         using var ms = new MemoryStream();
@@ -70,29 +73,15 @@ public class ScorecardParserService
     private string BuildPromptText()
     {
         return $@"
-Extract the player's **hole-by-hole scores** from this golf scorecard image. Scores are always under a column labeled 'Score'.
-
-📥 Return a valid JSON object with this **exact key**:
-- `holes` (list of 9 or 18 integers)
-
-🧠 **Validation rules holes:**
-- Sum of first 9 holes = ""Front 9"" total (labeled 'Ut')
-- Sum of last 9 holes = ""Back 9"" total (labeled 'In')
-- Sum of all = final total score (e.g., 86 in ""86/72"")
-
-🔍 If the sums don’t match:
-- Start from hole 18 and re-check values.
-- Only correct scores with **low certainty**, one at a time.
-- Rerun validation after each fix.
-- If still uncertain, return a `""comments""` field explaining what couldn't be validated.
-
-
-✅ Output a **pure JSON object**, like this:
-```json
-{{
-  ""holes"": [4, 6, 6, 5, 5, 5, 6, 5, 3, 4, 5, 5, 4, 8, 4, 3, 4, 5]
-}} and a log telling me what took the longest time in the request/prompt and how i can speed it up.
+Extract golf scores from the 'Score' column in the provided scorecard image. Return scores as a JSON object with a key 'holes' containing a list of integers. Ensure the sum of the first 9 scores matches the 'Ut' total and the last 9 scores match the 'In' total. 
+If discrepancies arise, start corrections from hole 18 and recheck each step for accuracy. Include a 'comments' field if validation issues persist, and give me the confidence score. If confidence score is below 0.93, recheck.
 ";
+        
+        
+        
+        
+        
+        
     }
 
     private object CreateRequestBody(string promptText, string base64Image, string contentType) => new
