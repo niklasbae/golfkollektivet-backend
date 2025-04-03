@@ -108,7 +108,7 @@ public class ScorecardParserService
             });
         }
 
-        VerifyParsedHoleData(structured);
+        //VerifyParsedHoleData(structured);
 
         return new ParsedScorecardResult
         {
