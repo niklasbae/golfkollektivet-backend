@@ -94,8 +94,7 @@ public class GolfboxController : ControllerBase
         {
             scoreDate = result.ScoreDate,
             scoreTime = result.ScoreTime,
-            holes = result.Holes,
-            cropY = result.HoleRowStartYCoordinate
+            holes = result.Holes
         });
     }
     
@@ -162,7 +161,7 @@ public class GolfboxController : ControllerBase
         if (request.Image == null || request.Image.Length == 0)
             return BadRequest("No image uploaded");
 
-        var result = await _parserService.ParseScorecardWithHoleDataAsync(request.Image);
+        var result = await _parserService.ParseScorecardStructuredHoleDataParallelAsync(request.Image);
 
         if (result == null)
             return StatusCode(500, "Failed to parse image");
@@ -171,8 +170,7 @@ public class GolfboxController : ControllerBase
         {
             scoreDate = result.ScoreDate,
             scoreTime = result.ScoreTime,
-            structuredHoles = result.HoleDetails,
-            cropY = result.HoleRowStartYCoordinate
+            structuredHoles = result.HoleDetails
         });
     }
     
