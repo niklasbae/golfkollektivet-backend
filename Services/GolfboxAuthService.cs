@@ -116,14 +116,18 @@ public class GolfboxAuthService
     
     public async Task<bool> SubmitPreparedScoreFormAsync(string selectedGuid, Dictionary<string, string> formData)
     {
+        
+        Console.WriteLine("📤 Submitting form data to GolfBox:");
+        foreach (var kvp in formData)
+        {
+            Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+        }
+        
         var response = await _httpClient.PostAsync(
             $"https://www.golfbox.no/site/my_golfbox/score/whs/newWHSScore.asp?selected={selectedGuid}",
             new FormUrlEncodedContent(formData));
 
         var body = await response.Content.ReadAsStringAsync();
-
-        Console.WriteLine("📄 Submission HTML:\n" + body); // 👈 Always print the body
-
         
         if (!body.Contains("Score er lagret") &&
             (response.Headers.Location?.ToString().Contains("listScoresToConfirm.asp") != true))
