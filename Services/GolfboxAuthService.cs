@@ -122,6 +122,9 @@ public class GolfboxAuthService
 
         var body = await response.Content.ReadAsStringAsync();
 
+        Console.WriteLine("📄 Submission HTML:\n" + body); // 👈 Always print the body
+
+        
         if (!body.Contains("Score er lagret") &&
             (response.Headers.Location?.ToString().Contains("listScoresToConfirm.asp") != true))
         {
