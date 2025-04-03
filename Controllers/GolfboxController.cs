@@ -43,9 +43,9 @@ public class GolfboxController : ControllerBase
     }
 
     [HttpGet("search-marker")]
-    public async Task<IActionResult> SearchMarker([FromQuery] string name)
+    public async Task<IActionResult> SearchMarker([FromQuery] string input)
     {
-        var results = await _markerService.SearchAsync(name);
+        var results = await _markerService.SearchAsync(input);
         return Ok(results);
     }
 

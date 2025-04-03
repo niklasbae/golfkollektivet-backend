@@ -12,7 +12,7 @@ public class SubmitScoreRequest
     [Required] public string TeeName { get; set; } = default!;
     public string TeeGender { get; set; } = "Male";
 
-    [Required] public string MarkerName { get; set; } = default!;
+    [Required] public string MarkerGuid { get; set; } = default!;
 
     [Required, RegularExpression(@"\d{2}\.\d{2}\.\d{4}", ErrorMessage = "Format: dd.MM.yyyy")]
     public string ScoreDate { get; set; } = default!;

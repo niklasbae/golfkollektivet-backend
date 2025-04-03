@@ -11,7 +11,7 @@ public class SubmitForeignScoreRequest
     public string ScoreDate { get; set; }
     public string ScoreTime { get; set; }
 
-    public string MarkerName { get; set; }
+    public string MarkerGuid { get; set; }
 
     public int Par { get; set; }
     public double CourseRating { get; set; }

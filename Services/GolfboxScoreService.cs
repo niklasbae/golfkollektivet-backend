@@ -29,9 +29,10 @@ public class GolfboxScoreService
             return new SubmitScoreResult { Success = false, ErrorMessage = "Dynamic token fields are incomplete." };
         }
         
+        /*
         var markerGuid = await _markerService.GetMarkerGuidAsync(request.MarkerName);
         if (string.IsNullOrEmpty(markerGuid))
-            return new SubmitScoreResult { Success = false, ErrorMessage = "Marker not found." };
+            return new SubmitScoreResult { Success = false, ErrorMessage = "Marker not found." };*/
 
         var clubId = dynamicToken.Clubs.FirstOrDefault(c => c.Name.Equals(request.ClubName, StringComparison.OrdinalIgnoreCase)).Guid;
         if (string.IsNullOrEmpty(clubId))
@@ -74,7 +75,7 @@ public class GolfboxScoreService
             ["fld_CoursePar"] = par,
             ["fld_CourseRating"] = rating,
             ["fld_Slope"] = slope,
-            ["fld_MarkerMemberGUID"] = markerGuid,
+            ["fld_MarkerMemberGUID"] = request.MarkerGuid,
             ["chk_InputHoleScores"] = "on"
         };
 
@@ -104,9 +105,10 @@ public class GolfboxScoreService
         return new SubmitScoreResult { Success = false, ErrorMessage = "Dynamic token fields are incomplete." };
     }
 
+    /*
     var markerGuid = await _markerService.GetMarkerGuidAsync(request.MarkerName);
     if (string.IsNullOrEmpty(markerGuid))
-        return new SubmitScoreResult { Success = false, ErrorMessage = "Marker not found." };
+        return new SubmitScoreResult { Success = false, ErrorMessage = "Marker not found." };*/
 
     var formData = new Dictionary<string, string>
     {
@@ -133,7 +135,7 @@ public class GolfboxScoreService
         ["fld_CoursePar"] = request.Par.ToString(),
         ["fld_CourseRating"] = request.CourseRating.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture),
         ["fld_Slope"] = request.Slope.ToString(),
-        ["fld_MarkerMemberGUID"] = markerGuid,
+        ["fld_MarkerMemberGUID"] = request.MarkerGuid,
         ["chk_InputHoleScores"] = "on",
     };
 
