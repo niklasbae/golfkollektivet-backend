@@ -83,8 +83,11 @@ public class GolfboxMarkerService
                     Club = clubMatch.Success ? clubMatch.Groups[1].Value : "",
                     Display = opt.InnerText.Trim()
                 });
+                Console.WriteLine("Markør funnet: " + nameMatch.Groups[1].Value);
             }
         }
+        
+        Console.WriteLine("Markør funnet: ");
 
         return results;
     }

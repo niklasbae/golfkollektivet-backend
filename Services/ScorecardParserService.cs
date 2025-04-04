@@ -137,7 +137,7 @@ The player can sometimes start an 18 hole round, but only do 9. If so, the secon
 Use the knowledge from the score exatraction to know if 9 or 18 holes were played and extract accordingly. 
 Do not interpret the Score, Par or Netto rows as HCP. 
 
-Output structure: {{
+Output structure (no comments, ""//"", or anything else than pure json): {{
   ""holesHcp"": []
 }}
 ";
@@ -155,7 +155,7 @@ The player can sometimes start an 18 hole round, but only do 9. If so, the secon
 Use the knowledge from the score exatraction to know if 9 or 18 holes were played and extract accordingly. 
 Do not interpret the Score, HCP or Netto rows as Par. 
 
-Output structure: {{
+Output structure(no comments, """"//"""", or anything else than pure json): {{
   ""holesPar"": []
 }}
 ";
@@ -170,7 +170,7 @@ Extract golf scores from the 'Score' row in the provided scorecard image. Create
 Use the knowledge from the first step to know if 9 or 18 holes were played and extract accordingly. 
 Do not interpret the Handicap, Par or Netto row as Scores.
 
-Output structure: {{
+Output structure(no comments, """"//"""", or anything else than pure json): {{
   ""holesScores"": []
 }}
 ";
