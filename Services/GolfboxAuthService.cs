@@ -76,7 +76,7 @@ public class GolfboxAuthService
         {
             var name = node.GetAttributeValue("name", "");
             var value = node.GetAttributeValue("value", "");
-            Console.WriteLine($"🔍 Hidden field: {name} = {value}");
+            // Console.WriteLine($"🔍 Hidden field: {name} = {value}");
 
             if (Regex.IsMatch(name, @"^[A-F0-9\-]{36}$", RegexOptions.IgnoreCase))
             {
